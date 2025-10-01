@@ -31,6 +31,117 @@ def get_password_hash(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 
+# JWT settings
+SECRET_KEY = "lokatani_secret_key_2025"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
+
+# Security
+security = HTTPBearer()
+
+app = FastAPI()
+api_router = APIRouter(prefix="/api")
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+
+# ===== Models =====
+
+class UserRegister(BaseModel):
+    username: str
+    password: str
+    name: str
+    phone: str
+    role: str  # "farmer" or "buyer"
+
+
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+
+class User(BaseModel):
+    id: Optional[str] = None
+    username: str
+    name: str
+    phone: str
+    role: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class Product(BaseModel):
+    id: Optional[str] = None
+    name: str
+    description: str
+    price: float
+    location: str
+    image_base64: str
+    farmer_id: str
+    farmer_name: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ProductCreate(BaseModel):
+    name: str
+    description: str
+    price: float
+    location: str
+    image_base64: str
+
+
+class ProductUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[float] = None
+    location: Optional[str] = None
+    image_base64: Optional[str] = None
+
+
+class CartItem(BaseModel):
+    product_id: str
+    quantity: int
+
+
+class Cart(BaseModel):
+    user_id: str
+    items: List[CartItem] = []
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class AddToCart(BaseModel):
+    product_id: str
+    quantity: int = 1
+
+
+class Order(BaseModel):
+    id: Optional[str] = None
+    buyer_id: str
+    buyer_name: str
+    items: List[dict]
+    total: float
+    status: str = "completed"  # Mock payment always succeeds
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class CreateOrder(BaseModel):
+    items: List[dict]
+    total: float
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: User
+
+
+# ===== Helper Functions =====
+
+
 def create_access_token(data: dict):
     to_encode = data.copy()
     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
