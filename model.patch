@@ -1,0 +1,35 @@
+diff --git a/backend/server.py b/backend/server.py
+index e6bb888..d29187a 100644
+--- a/backend/server.py
++++ b/backend/server.py
+@@ -141,15 +141,6 @@ class Token(BaseModel):
+ 
+ # ===== Helper Functions =====
+ 
+-
+-def create_access_token(data: dict):
+-    to_encode = data.copy()
+-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+-    to_encode.update({"exp": expire})
+-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+-    return encoded_jwt
+-
+-
+ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
+     try:
+         token = credentials.credentials
+@@ -168,6 +159,14 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
+     return User(**user)
+ 
+ 
++def create_access_token(data: dict):
++    to_encode = data.copy()
++    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
++    to_encode.update({"exp": expire})
++    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
++    return encoded_jwt
++
++
+ # ===== Auth Endpoints =====
+ 
+ @api_router.post("/register", response_model=Token)
