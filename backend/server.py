@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
+import bcrypt
 from jose import JWTError, jwt
 from bson import ObjectId
 
