@@ -167,24 +167,6 @@ def create_access_token(data: dict):
     return encoded_jwt
 
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    try:
-        token = credentials.credentials
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
-            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
-    
-    user = await db.users.find_one({"username": username})
-    if user is None:
-        raise HTTPException(status_code=401, detail="User not found")
-    
-    user['id'] = str(user['_id'])
-    return User(**user)
-
-
 # ===== Auth Endpoints =====
 
 @api_router.post("/register", response_model=Token)
